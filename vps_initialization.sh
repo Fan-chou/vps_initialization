@@ -19,7 +19,7 @@ Msg_Error="${Font_Red}[Error] ${Font_Suffix}"
 Msg_Success="${Font_Green}[Success] ${Font_Suffix}"
 Msg_Fail="${Font_Red}[Failed] ${Font_Suffix}"
 
-enviorment_test(){
+enviorment_test() {
     echo -e "${Msg_Info} 开始检测系统环境... "
     if [ ! -f "/usr/sbin/virt-what" ]; then
         SystemInfo_GetOSRelease
@@ -142,7 +142,7 @@ BaseInstall() {
     echo -e "${Msg_Info}开始为当前系统按照常用软件 ... "
     echo -e "${Msg_Info}检测当前系统 ... "
     SystemInfo_GetOSRelease
-    if [ "${Var_OSRelease}" = "ubuntu" ];then
+    if [ "${Var_OSRelease}" = "ubuntu" ]; then
         echo -e "${Msg_Info}↓↓↓ 当前系统为 Ubuntu 将安装以下软件 ↓↓↓"
         echo -e "        wget curl git lsof vim mtr jq htop sudo vnstat"
         echo -e "        iftop zsh neofetch unzip zip python3 python3-pip"
@@ -157,7 +157,7 @@ BaseInstall() {
         apt install --no-install-recommends -y wget curl git lsof vim mtr jq htop sudo vnstat iftop zsh neofetch unzip zip python3 python3-pip socat dnsutils screen iperf3
         echo -e "${Msg_Warning}当前系统为 Ubuntu 执行安装结束 ..."
         echo -e "${Msg_Success}当前系统为 Ubuntu 请注意执行安装是否成功"
-    elif [ "${Var_OSRelease}" = "debian" ];then
+    elif [ "${Var_OSRelease}" = "debian" ]; then
         echo -e "${Msg_Info}↓↓↓ 当前系统为 Debian 将安装以下软件 ↓↓↓"
         echo -e "        wget curl git lsof vim mtr jq htop sudo vnstat"
         echo -e "        iftop zsh neofetch unzip zip python3 python3-pip"
@@ -166,12 +166,12 @@ BaseInstall() {
         echo -e "${Msg_Warning}等待 5 秒，如有疑问请键入 Ctrl + C 终止脚本运行！！！"
         sleep 5
         echo -e "${Msg_Warning}当前系统为 Debian 执行安装中 ..."
-        apt update 
+        apt update
         apt upgrade -y
         apt install -y wget curl git lsof vim mtr jq htop sudo vnstat iftop zsh neofetch unzip zip python3 python3-pip socat dnsutils screen iperf3
         echo -e "${Msg_Warning}当前系统为 Debian 执行安装结束 ..."
         echo -e "${Msg_Success}当前系统为 Debian 请注意执行安装是否成功"
-    elif [ "${Var_OSRelease}" = "centos" ];then
+    elif [ "${Var_OSRelease}" = "centos" ]; then
         echo -e "${Msg_Info}↓↓↓ 当前系统为 Centos 将安装以下软件 ↓↓↓"
         echo -e "        wget curl git lsof vim mtr jq htop sudo vnstat"
         echo -e "        iftop zsh neofetch unzip zip python3 python3-pip"
@@ -181,138 +181,141 @@ BaseInstall() {
         sleep 5
         echo -e "${Msg_Warning}当前系统为 Centos 执行安装中 ..."
         yum -y install epel-release
-        yum  install -y wget curl git lsof vim mtr jq htop sudo vnstat iftop zsh neofetch unzip zip python3 python3-pip socat bind-utils screen
+        yum install -y wget curl git lsof vim mtr jq htop sudo vnstat iftop zsh neofetch unzip zip python3 python3-pip socat bind-utils screen
         echo -e "${Msg_Warning}当前系统为 Centos 执行安装结束 ..."
         echo -e "${Msg_Success}当前系统为 Centos 请注意执行安装是否成功"
     fi
 }
 
 InstallOhmyzsh() {
-  echo -e "${Msg_Warning}提醒，当前安装过程对网络有一定要求，部分地区如中国大陆地区，请确保 github.com 的顺畅访问！！！"
-  echo -e "${Msg_Warning}Ohmyzsh 将默认安装在当前账户 \$HOME 目录下，如有其它需要请键入 Ctrl + C 终止脚本运行！！！"
-  sleep 5
-  echo -e "${Msg_Info}开始检测 ZSH 是否安装 ... "
-  if [ ! -f "/usr/bin/zsh" ]; then
-    SystemInfo_GetOSRelease
-    if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
-        echo -e "${Msg_Warning}zsh 未找到，安装中 ..."
-        yum -y install zsh
-    elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
-        echo -e "${Msg_Warning}zsh 未找到，安装中 ..."
-        apt-get update
-        apt-get install -y zsh
-    elif [ "${Var_OSRelease}" = "fedora" ]; then
-        echo -e "${Msg_Warning}zsh 未找到，安装中 ..."
-        dnf -y install zsh
-    elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
-        echo -e "${Msg_Warning}zsh 未找到，安装中 ..."
-        apk update
-        apk add zsh
-    else
-        echo -e "${Msg_Warning}zsh 未找到, 由于无法识别当前系统无法继续，请手动安装后重新执行 ..."
-    fi
-  fi
-  # 二次检测
-  if [ ! -f "/usr/bin/zsh" ]; then
-      echo -e "${Msg_Error}zsh 安装失败! 尝试重新执行或者检查安装位置! (/usr/bin/zsh)"
-      exit 1
-  fi
-  echo -e "${Msg_Info}ZSH 已经安装，开始检测 ohmyzsh 是否安装 ... "
-  
-  if [ ! -d "/root/.oh-my-zsh" ]; then
-    SystemInfo_GetOSRelease
-    if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
-        echo -e "${Msg_Warning}安装 git 中 ..."
-        yum -y install git
-    elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
-        echo -e "${Msg_Warning}安装 git curl 中 ..."
-        apt-get update
-        apt-get install -y curl git
-    elif [ "${Var_OSRelease}" = "fedora" ]; then
-        echo -e "${Msg_Warning}安装 git 中 ..."
-        dnf -y install zsh git
-    elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
-        echo -e "${Msg_Warning}安装 git curl 中 ..."
-        apk update
-        apk add curl git
-    fi
-    if [ ! -f "/usr/bin/curl" ]; then
-        echo -e "${Msg_Warning}curl 未找到, 由于无法识别当前系统无法继续，请手动安装后重新执行 ..."
-    fi
-    if [ ! -f "/usr/bin/git" ]; then
-        echo -e "${Msg_Warning}git 未找到, 由于无法识别当前系统无法继续，请手动安装后重新执行 ..."
-    else
-        cd $HOME
-        sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh) --unattended" --skip-chsh
-        git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-        mkdir -p "$HOME/.zsh"
-        git clone https://github.com/sindresorhus/pure.git "$HOME/.zsh/pure"
-        echo "fpath+=$HOME/.zsh/pure" >> $HOME/.zshrc
-        echo "autoload -U promptinit; promptinit" >> $HOME/.zshrc
-        echo "zmodload zsh/nearcolor" >> $HOME/.zshrc
-        echo "zstyle :prompt:pure:path color '#FF0000'" >> $HOME/.zshrc
-        echo "prompt pure" >> $HOME/.zshrc
-        plugins=`cat $HOME/.zshrc | grep plugins= | grep ^p`
-        sed -i "s/$plugins/plugins=(git z colored-man-pages zsh-autosuggestions zsh-syntax-highlighting extract)/g" $HOME/.zshrc
-        echo -e "${Msg_Warning}Ohmyzsh 安装设置完成 ..."
-        if [ "$(basename -- "$SHELL")" = "zsh" ]; then
-            echo -e "${Msg_Warning}当前 Shell 为 ZSH ..."
+    echo -e "${Msg_Warning}提醒，当前安装过程对网络有一定要求，部分地区如中国大陆地区，请确保 github.com 的顺畅访问！！！"
+    echo -e "${Msg_Warning}Ohmyzsh 将默认安装在当前账户 \$HOME 目录下，如有其它需要请键入 Ctrl + C 终止脚本运行！！！"
+    sleep 5
+    echo -e "${Msg_Info}开始检测 ZSH 是否安装 ... "
+    if [ ! -f "/usr/bin/zsh" ]; then
+        SystemInfo_GetOSRelease
+        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
+            echo -e "${Msg_Warning}zsh 未找到，安装中 ..."
+            yum -y install zsh
+        elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
+            echo -e "${Msg_Warning}zsh 未找到，安装中 ..."
+            apt-get update
+            apt-get install -y zsh
+        elif [ "${Var_OSRelease}" = "fedora" ]; then
+            echo -e "${Msg_Warning}zsh 未找到，安装中 ..."
+            dnf -y install zsh
+        elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
+            echo -e "${Msg_Warning}zsh 未找到，安装中 ..."
+            apk update
+            apk add zsh
+        else
+            echo -e "${Msg_Warning}zsh 未找到, 由于无法识别当前系统无法继续，请手动安装后重新执行 ..."
         fi
-        # Check if we're running on Termux
-        case "$PREFIX" in
-            *com.termux*) termux=true; zsh=zsh ;;
+    fi
+    # 二次检测
+    if [ ! -f "/usr/bin/zsh" ]; then
+        echo -e "${Msg_Error}zsh 安装失败! 尝试重新执行或者检查安装位置! (/usr/bin/zsh)"
+        exit 1
+    fi
+    echo -e "${Msg_Info}ZSH 已经安装，开始检测 ohmyzsh 是否安装 ... "
+
+    if [ ! -d "/root/.oh-my-zsh" ]; then
+        SystemInfo_GetOSRelease
+        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
+            echo -e "${Msg_Warning}安装 git 中 ..."
+            yum -y install git
+        elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
+            echo -e "${Msg_Warning}安装 git curl 中 ..."
+            apt-get update
+            apt-get install -y curl git
+        elif [ "${Var_OSRelease}" = "fedora" ]; then
+            echo -e "${Msg_Warning}安装 git 中 ..."
+            dnf -y install zsh git
+        elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
+            echo -e "${Msg_Warning}安装 git curl 中 ..."
+            apk update
+            apk add curl git
+        fi
+        if [ ! -f "/usr/bin/curl" ]; then
+            echo -e "${Msg_Warning}curl 未找到, 由于无法识别当前系统无法继续，请手动安装后重新执行 ..."
+        fi
+        if [ ! -f "/usr/bin/git" ]; then
+            echo -e "${Msg_Warning}git 未找到, 由于无法识别当前系统无法继续，请手动安装后重新执行 ..."
+        else
+            cd $HOME
+            sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh) --unattended" --skip-chsh
+            git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+            git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+            mkdir -p "$HOME/.zsh"
+            git clone https://github.com/sindresorhus/pure.git "$HOME/.zsh/pure"
+            echo "fpath+=$HOME/.zsh/pure" >>$HOME/.zshrc
+            echo "autoload -U promptinit; promptinit" >>$HOME/.zshrc
+            echo "zmodload zsh/nearcolor" >>$HOME/.zshrc
+            echo "zstyle :prompt:pure:path color '#FF0000'" >>$HOME/.zshrc
+            echo "prompt pure" >>$HOME/.zshrc
+            plugins=$(cat $HOME/.zshrc | grep plugins= | grep ^p)
+            sed -i "s/$plugins/plugins=(git z colored-man-pages zsh-autosuggestions zsh-syntax-highlighting extract)/g" $HOME/.zshrc
+            echo -e "${Msg_Warning}Ohmyzsh 安装设置完成 ..."
+            if [ "$(basename -- "$SHELL")" = "zsh" ]; then
+                echo -e "${Msg_Warning}当前 Shell 为 ZSH ..."
+            fi
+            # Check if we're running on Termux
+            case "$PREFIX" in
+            *com.termux*)
+                termux=true
+                zsh=zsh
+                ;;
             *) termux=false ;;
-        esac
+            esac
 
-        if [ "$termux" != true ]; then
-            # Test for the right location of the "shells" file
-            if [ -f /etc/shells ]; then
-            shells_file=/etc/shells
-            elif [ -f /usr/share/defaults/etc/shells ]; then # Solus OS
-            shells_file=/usr/share/defaults/etc/shells
+            if [ "$termux" != true ]; then
+                # Test for the right location of the "shells" file
+                if [ -f /etc/shells ]; then
+                    shells_file=/etc/shells
+                elif [ -f /usr/share/defaults/etc/shells ]; then # Solus OS
+                    shells_file=/usr/share/defaults/etc/shells
+                else
+                    echo -e "${Msg_Error}/etc/shells 文件不存在. 请自行切换默认 Shell ！！！"
+                    return
+                fi
+
+                # Get the path to the right zsh binary
+                # 1. Use the most preceding one based on $PATH, then check that it's in the shells file
+                # 2. If that fails, get a zsh path from the shells file, then check it actually exists
+                if ! zsh=$(command -v zsh) || ! grep -qx "$zsh" "$shells_file"; then
+                    if ! zsh=$(grep '^/.*/zsh$' "$shells_file" | tail -1) || [ ! -f "$zsh" ]; then
+                        echo -e "${Msg_Error}未找到在 '$shells_file' 找到 zsh 相关内容"
+                        echo -e "${Msg_Error}请自行切换默认 Shell ！！！"
+                        return
+                    fi
+                fi
+            fi
+
+            if [ -n "$SHELL" ]; then
+                echo "$SHELL" >~/.shell.pre-oh-my-zsh
             else
-            echo -e  "${Msg_Error}/etc/shells 文件不存在. 请自行切换默认 Shell ！！！"
-            return
+                grep "^$USERNAME:" /etc/passwd | awk -F: '{print $7}' >~/.shell.pre-oh-my-zsh
             fi
 
-            # Get the path to the right zsh binary
-            # 1. Use the most preceding one based on $PATH, then check that it's in the shells file
-            # 2. If that fails, get a zsh path from the shells file, then check it actually exists
-            if ! zsh=$(command -v zsh) || ! grep -qx "$zsh" "$shells_file"; then
-            if ! zsh=$(grep '^/.*/zsh$' "$shells_file" | tail -1) || [ ! -f "$zsh" ]; then
-                echo -e  "${Msg_Error}未找到在 '$shells_file' 找到 zsh 相关内容"
-                echo -e  "${Msg_Error}请自行切换默认 Shell ！！！"
-                return
+            # Actually change the default shell to zsh
+            if ! chsh -s "$zsh"; then
+                echo -e "${Msg_Error}chsh 命令执行失败，请自行切换默认 Shell ！！！"
+            else
+                export SHELL="$zsh"
+                echo "${GREEN}Shell 已经切换至 '$zsh'"
             fi
-            fi
+            echo -e "${Msg_Success}Ohmyzsh 安装完成，并使用 Pure [https://github.com/sindresorhus/pure] 主题 ..."
+            exec zsh -l
         fi
-
-        if [ -n "$SHELL" ]; then
-            echo "$SHELL" > ~/.shell.pre-oh-my-zsh
-        else
-            grep "^$USERNAME:" /etc/passwd | awk -F: '{print $7}' > ~/.shell.pre-oh-my-zsh
-        fi
-
-        # Actually change the default shell to zsh
-        if ! chsh -s "$zsh"; then
-            echo -e  "${Msg_Error}chsh 命令执行失败，请自行切换默认 Shell ！！！"
-        else
-            export SHELL="$zsh"
-            echo "${GREEN}Shell 已经切换至 '$zsh'"
-        fi
-        echo -e "${Msg_Success}Ohmyzsh 安装完成，并使用 Pure [https://github.com/sindresorhus/pure] 主题 ..."
-        exec zsh -l
+    else
+        echo -e "${Msg_Success}Ohmyzsh 已经安装！！！"
     fi
-  else
-    echo -e "${Msg_Success}Ohmyzsh 已经安装！！！"
-  fi
 }
 
 InstallCollectd() {
-#   echo -e "${Msg_Warning}提醒，当前安装过程对网络有一定要求，部分地区如中国大陆地区，请确保 github.com 的顺畅访问！！！"
-#   echo -e "${Msg_Warning}Ohmyzsh 将默认安装在当前账户 \$HOME 目录下，如有其它需要请键入 Ctrl + C 终止脚本运行！！！"
-#   sleep 5
+    #   echo -e "${Msg_Warning}提醒，当前安装过程对网络有一定要求，部分地区如中国大陆地区，请确保 github.com 的顺畅访问！！！"
+    #   echo -e "${Msg_Warning}Ohmyzsh 将默认安装在当前账户 \$HOME 目录下，如有其它需要请键入 Ctrl + C 终止脚本运行！！！"
+    #   sleep 5
     echo -e "${Msg_Info}开始检测 collectd 是否安装 ... "
     if [ ! -f "/usr/sbin/collectd" ]; then
         SystemInfo_GetOSRelease
@@ -348,7 +351,7 @@ InstallCollectd() {
 
 InstallGolang() {
     echo -e "${Msg_Info}开始检测 Golang 是否安装 ... "
-    golang_dir=`which go`
+    golang_dir=$(which go)
     if [ $? -ne 0 ]; then
         SystemInfo_GetOSRelease
 
@@ -407,32 +410,33 @@ echo_help() {
     # echo -e "${Font_Yellow}--sbcfast${Font_Suffix}\t\t${Font_SkyBlue}CPU Benchmark Test (Fast Test Mode)${Font_Suffix}"
     # echo -e "${Font_Yellow}--sbcfull${Font_Suffix}\t\t${Font_SkyBlue}CPU Benchmark Test (Full Test Mode)${Font_Suffix}"
     # echo -e "${Font_Yellow}--sbmfast${Font_Suffix}\t\t${Font_SkyBlue}Memory Benchmark Test (Fast Test Mode)${Font_Suffix}"
-    # echo -e "${Font_Yellow}--sbmfull${Font_Suffix}\t\t${Font_SkyBlue}Memory Benchmark Test (Full Test Mode)${Font_Suffix}"    
+    # echo -e "${Font_Yellow}--sbmfull${Font_Suffix}\t\t${Font_SkyBlue}Memory Benchmark Test (Full Test Mode)${Font_Suffix}"
     # echo -e "${Font_Yellow}--spoof${Font_Suffix}\t\t${Font_SkyBlue}Caida Spoofer Test ${Font_Yellow}(Use it at your own risk)${Font_Suffix}${Font_Suffix}"
 }
 
 case $1 in
-  --install | -i )
-    if [ $# -eq 1 ];then
-      enviorment_test
-      BaseInstall
-    elif [ $# -eq 2 ];then
-      case $2 in
-        ohmyzsh )
-          InstallOhmyzsh
-        ;;
-        collectd )
-          InstallCollectd
-        ;;
+--install | -i)
+    if [ $# -eq 1 ]; then
+        enviorment_test
+        BaseInstall
+    elif [ $# -eq 2 ]; then
+        case $2 in
+        ohmyzsh)
+            InstallOhmyzsh
+            ;;
+        collectd)
+            InstallCollectd
+            ;;
         *)
-        [[ "$1" != 'error' ]] && echo -ne "\n${Msg_Error}Not Support install $2\n"
-      esac
+            [[ "$1" != 'error' ]] && echo -ne "\n${Msg_Error}Not Support install $2\n"
+            ;;
+        esac
     fi
     ;;
-  --help | -h )
+--help | -h)
     echo_help
     ;;
-  *)
+*)
     [[ "$1" != 'error' ]] && echo -ne "\n${Msg_Error}Invalid Parameters: \"$1\"\n"
     echo_help
     exit 1
