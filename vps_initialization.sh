@@ -362,7 +362,7 @@ Installsysctl() {
 
         /usr/sbin/sysctl -p
     else
-        echo -e "${Msg_Warning}暂不支持 ${Var_OSRelease}"..."
+        echo -e "${Msg_Warning}暂不支持 ${Var_OSRelease}..."
     fi
 }
 
