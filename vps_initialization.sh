@@ -366,44 +366,44 @@ Installsysctl() {
     fi
 }
 
-InstallGolang() {
-    echo -e "${Msg_Info}开始检测 Golang 是否安装 ... "
-    golang_dir=$(which go)
-    if [ $? -ne 0 ]; then
-        SystemInfo_GetOSRelease
+# InstallGolang() {
+#     echo -e "${Msg_Info}开始检测 Golang 是否安装 ... "
+#     golang_dir=$(which go)
+#     if [ $? -ne 0 ]; then
+#         SystemInfo_GetOSRelease
 
-        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
-            echo -e "${Msg_Warning}暂不支持 ${Var_OSRelease}"
-        elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
-            echo -e "${Msg_Warning}Golang 未找到，安装中 ..."
-            apt-get update
-            apt-get autoremove lvm2 collectd-core collectd -y
-            apt-get purge lvm2 collectd-core collectd -y
-            apt-get install lvm2 -y
-            apt-get install collectd-core -y
-            apt-get install collectd liboping0 -y
-        elif [ "${Var_OSRelease}" = "fedora" ]; then
-            echo -e "${Msg_Warning}暂不支持 ${Var_OSRelease}"
-        elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
-            echo -e "${Msg_Warning}暂不支持 ${Var_OSRelease}"
-        else
-            echo -e "${Msg_Warning}collectd 未找到, 由于无法识别当前系统无法继续 ..."
-        fi
-        if [ ! -f "/usr/bin/curl" ]; then
-            echo -e "${Msg_Warning}curl 未找到, 由于无法识别当前系统无法继续，请手动安装后重新执行 ..."
-        fi
-    else
-        echo -e "${Msg_Warning}检测到 Goalng 已经安装 ("${golang_dir}") ..."
-    fi
-    # 二次检测
-    if [ ! -f "/usr/sbin/collectd" ]; then
-        echo -e "${Msg_Error}collectd 安装失败! 尝试重新执行或者检查安装位置! (/usr/sbin/collectd)"
-        exit 1
-    else
-        systemctl enable collectd
-        echo -e "${Msg_Warning}已经添加 collectd 开机自启动 ..."
-    fi
-}
+#         if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
+#             echo -e "${Msg_Warning}暂不支持 ${Var_OSRelease}"
+#         elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
+#             echo -e "${Msg_Warning}Golang 未找到，安装中 ..."
+#             apt-get update
+#             apt-get autoremove lvm2 collectd-core collectd -y
+#             apt-get purge lvm2 collectd-core collectd -y
+#             apt-get install lvm2 -y
+#             apt-get install collectd-core -y
+#             apt-get install collectd liboping0 -y
+#         elif [ "${Var_OSRelease}" = "fedora" ]; then
+#             echo -e "${Msg_Warning}暂不支持 ${Var_OSRelease}"
+#         elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
+#             echo -e "${Msg_Warning}暂不支持 ${Var_OSRelease}"
+#         else
+#             echo -e "${Msg_Warning}collectd 未找到, 由于无法识别当前系统无法继续 ..."
+#         fi
+#         if [ ! -f "/usr/bin/curl" ]; then
+#             echo -e "${Msg_Warning}curl 未找到, 由于无法识别当前系统无法继续，请手动安装后重新执行 ..."
+#         fi
+#     else
+#         echo -e "${Msg_Warning}检测到 Goalng 已经安装 ("${golang_dir}") ..."
+#     fi
+#     # 二次检测
+#     if [ ! -f "/usr/sbin/collectd" ]; then
+#         echo -e "${Msg_Error}collectd 安装失败! 尝试重新执行或者检查安装位置! (/usr/sbin/collectd)"
+#         exit 1
+#     else
+#         systemctl enable collectd
+#         echo -e "${Msg_Warning}已经添加 collectd 开机自启动 ..."
+#     fi
+# }
 
 echo_help() {
     echo -e " "
