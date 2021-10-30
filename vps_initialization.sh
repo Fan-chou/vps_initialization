@@ -146,7 +146,7 @@ BaseInstall() {
         echo -e "${Msg_Info}↓↓↓ 当前系统为 Ubuntu 将安装以下软件 ↓↓↓"
         echo -e "        wget curl git lsof vim mtr jq htop sudo vnstat"
         echo -e "        iftop zsh neofetch unzip zip python3 python3-pip"
-        echo -e "        socat dnsutils screen iperf3"
+        echo -e "        socat dnsutils screen iperf3 iotop"
         echo -e "${Msg_Info}↑↑↑ 当前系统为 Ubuntu 将安装以上软件 ↑↑↑"
         echo -e "${Msg_Warning}等待 5 秒，如有疑问请键入 Ctrl + C 终止脚本运行！！！"
         sleep 5
@@ -154,7 +154,7 @@ BaseInstall() {
         export DEBIAN_FRONTEND=noninteractive
         apt update
         apt upgrade -y
-        apt install --no-install-recommends -y wget curl git lsof vim mtr jq htop sudo vnstat iftop zsh neofetch unzip zip python3 python3-pip socat dnsutils screen iperf3
+        apt install --no-install-recommends -y wget curl git lsof vim mtr jq htop sudo vnstat iftop zsh neofetch unzip zip python3 python3-pip socat dnsutils screen iperf3 iotop
         echo -e "${Msg_Warning}当前系统为 Ubuntu 执行安装结束 ..."
         echo -e "${Msg_Success}当前系统为 Ubuntu 请注意执行安装是否成功"
     elif [ "${Var_OSRelease}" = "debian" ]; then
@@ -349,6 +349,23 @@ InstallCollectd() {
     fi
 }
 
+Installsysctl() {
+    echo -e "${Msg_Info}正在添加 sysctl 参数 ... "
+    SystemInfo_GetOSRelease
+    if [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
+        sed -i "$a net.ipv4.ip_forward=1" /etc/sysctl.conf
+        sed -i "$a net.core.default_qdisc=fq" /etc/sysctl.conf
+        sed -i "$a net.ipv4.tcp_congestion_control=bbr" /etc/sysctl.conf
+        sed -i "$a net.ipv4.conf.default.rp_filter=0" /etc/sysctl.conf
+        sed -i "$a net.ipv4.conf.all.rp_filter=0" /etc/sysctl.conf
+        sed -i "$a vm.swappiness = 5" /etc/sysctl.conf
+
+        /usr/sbin/sysctl -p
+    else
+        echo -e "${Msg_Warning}暂不支持 ${Var_OSRelease}"..."
+    fi
+}
+
 InstallGolang() {
     echo -e "${Msg_Info}开始检测 Golang 是否安装 ... "
     golang_dir=$(which go)
@@ -426,6 +443,9 @@ case $1 in
             ;;
         collectd)
             InstallCollectd
+            ;;
+        sysctl)
+            Installsysctl
             ;;
         *)
             [[ "$1" != 'error' ]] && echo -ne "\n${Msg_Error}Not Support install $2\n"
