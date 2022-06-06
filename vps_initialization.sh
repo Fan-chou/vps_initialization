@@ -322,7 +322,7 @@ InstallCollectd() {
         if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
             echo -e "${Msg_Warning}暂不支持 ${Var_OSRelease}"
         elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
-            echo -e "${Msg_Warning}zsh 未找到，安装中 ..."
+            echo -e "${Msg_Warning}collectd 未找到，安装中 ..."
             apt-get update
             apt-get autoremove lvm2 collectd-core collectd -y
             apt-get purge lvm2 collectd-core collectd -y
