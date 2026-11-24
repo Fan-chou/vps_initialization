@@ -1,0 +1,106 @@
+# shellcheck shell=bash
+# Managed by vps_initialization. Personal settings belong in ~/.bashrc
+# outside the marker, or in ~/.config/bash/local.sh. This file is replaced
+# on the next install.
+
+case ":${PATH}:" in
+  *":${HOME}/.local/bin:"*) ;;
+  *) PATH="${HOME}/.local/bin:${PATH}" ;;
+esac
+export PATH
+
+if ((BASH_VERSINFO[0] < 5)); then
+  return 0
+fi
+
+case $- in
+  *i*) ;;
+  *) return ;;
+esac
+
+if [[ ${_VPS_INIT_BASHRC_LOADED-} == 1 ]]; then
+  return 0
+fi
+_VPS_INIT_BASHRC_LOADED=1
+
+# ble.sh 152942758f567e51fd17bdc7b3783d27b3c476aa (0.4.0-devel4+1529427).
+# Source with --attach=none first. history-prefix-unique.sh binds keys
+# before ble-attach. A newer ble.sh can break those internal calls.
+if [[ -f $HOME/.local/share/blesh/ble.sh ]]; then
+  # shellcheck disable=SC1091
+  source -- "$HOME/.local/share/blesh/ble.sh" --attach=none
+fi
+
+if [[ -z ${HISTFILE-} ]]; then
+  HISTFILE=$HOME/.bash_history
+fi
+case ${HISTSIZE-} in
+  ''|*[!0-9]*) HISTSIZE=50000 ;;
+  *) [[ $HISTSIZE -ge 50000 ]] || HISTSIZE=50000 ;;
+esac
+case ${HISTFILESIZE-} in
+  ''|*[!0-9]*) HISTFILESIZE=50000 ;;
+  *) [[ $HISTFILESIZE -ge 50000 ]] || HISTFILESIZE=50000 ;;
+esac
+if [[ -z ${HISTCONTROL-} ]]; then
+  HISTCONTROL=ignoredups:ignorespace
+fi
+if [[ -z ${HISTTIMEFORMAT-} ]]; then
+  HISTTIMEFORMAT='%F %T '
+fi
+shopt -s histappend
+shopt -s checkwinsize
+shopt -s extglob
+
+if [[ -z ${BASH_COMPLETION_VERSINFO-} ]]; then
+  for __bc in \
+    "$HOME/.local/share/bash-completion/bash_completion" \
+    /usr/share/bash-completion/bash_completion
+  do
+    if [[ -f $__bc ]]; then
+      # shellcheck disable=SC1090
+      source "$__bc"
+      break
+    fi
+  done
+  unset __bc
+fi
+
+if [[ -f $HOME/.local/share/rupa-z/z.sh ]]; then
+  # shellcheck disable=SC1091
+  source "$HOME/.local/share/rupa-z/z.sh"
+fi
+
+BASH_LIB=$HOME/.config/bash
+# shellcheck disable=SC1091
+[[ -f $BASH_LIB/prompt.sh ]] && source "$BASH_LIB/prompt.sh"
+# shellcheck disable=SC1091
+[[ -f $BASH_LIB/extract.sh ]] && source "$BASH_LIB/extract.sh"
+# shellcheck disable=SC1091
+[[ -f $BASH_LIB/man-colors.sh ]] && source "$BASH_LIB/man-colors.sh"
+# shellcheck disable=SC1091
+[[ -f $BASH_LIB/git-helpers.sh ]] && source "$BASH_LIB/git-helpers.sh"
+# shellcheck disable=SC1091
+[[ -f $BASH_LIB/git-aliases.sh ]] && source "$BASH_LIB/git-aliases.sh"
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+
+export EDITOR="${EDITOR:-vim}"
+
+if [[ ${BLE_VERSION-} && -f $BASH_LIB/history-prefix-unique.sh ]]; then
+  # shellcheck disable=SC1091
+  source "$BASH_LIB/history-prefix-unique.sh"
+fi
+
+if [[ -f $BASH_LIB/local.sh ]]; then
+  # shellcheck disable=SC1091
+  source "$BASH_LIB/local.sh"
+fi
+
+if [[ ${BLE_VERSION-} ]]; then
+  ble-attach
+fi
