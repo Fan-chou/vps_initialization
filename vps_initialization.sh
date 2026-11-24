@@ -19,6 +19,35 @@ Msg_Error="${Font_Red}[Error] ${Font_Suffix}"
 Msg_Success="${Font_Green}[Success] ${Font_Suffix}"
 Msg_Fail="${Font_Red}[Failed] ${Font_Suffix}"
 
+vps_init_load_helpers() {
+    local src dir
+    src=${BASH_SOURCE[0]}
+    case $src in
+    /dev/fd/* | /proc/*) dir= ;;
+    *) dir=$(cd -- "$(dirname -- "$src")" && pwd) || dir= ;;
+    esac
+    if [[ -n $dir && -f $dir/share/bash/install.lib.sh ]]; then
+        VPS_INIT_ROOT=$dir
+        # shellcheck disable=SC1091
+        . "$dir/share/bash/install.lib.sh"
+        return 0
+    fi
+    local url tmp
+    url="https://raw.githubusercontent.com/Fan-chou/vps_initialization/${VPS_INIT_REF:-main}/share/bash/install.lib.sh"
+    tmp=$(mktemp) || return 1
+    if ! curl -fsSL -o "$tmp" -- "$url"; then
+        rm -f -- "$tmp"
+        echo -e "${Msg_Error}无法下载 Bash 安装逻辑: ${url}" >&2
+        return 1
+    fi
+    # shellcheck disable=SC1090
+    . "$tmp"
+    rm -f -- "$tmp"
+    VPS_INIT_ROOT=
+}
+
+vps_init_load_helpers || exit 1
+
 enviorment_test() {
     echo -e "${Msg_Info} 开始检测系统环境... "
     if [ ! -f "/usr/sbin/virt-what" ]; then
@@ -145,8 +174,9 @@ BaseInstall() {
     if [ "${Var_OSRelease}" = "ubuntu" ]; then
         echo -e "${Msg_Info}↓↓↓ 当前系统为 Ubuntu 将安装以下软件 ↓↓↓"
         echo -e "        wget curl git lsof vim mtr jq htop sudo vnstat"
-        echo -e "        iftop zsh neofetch unzip zip python3 python3-pip"
+        echo -e "        iftop neofetch unzip zip python3 python3-pip"
         echo -e "        socat dnsutils screen iperf3 iotop"
+        echo -e "        bash bash-completion make gawk ca-certificates xz-utils"
         echo -e "${Msg_Info}↑↑↑ 当前系统为 Ubuntu 将安装以上软件 ↑↑↑"
         echo -e "${Msg_Warning}等待 5 秒，如有疑问请键入 Ctrl + C 终止脚本运行！！！"
         sleep 5
@@ -154,34 +184,36 @@ BaseInstall() {
         export DEBIAN_FRONTEND=noninteractive
         apt update
         apt upgrade -y
-        apt install --no-install-recommends -y wget curl git lsof vim mtr jq htop sudo vnstat iftop zsh neofetch unzip zip python3 python3-pip socat dnsutils screen iperf3 iotop
+        apt install --no-install-recommends -y wget curl git lsof vim mtr jq htop sudo vnstat iftop neofetch unzip zip python3 python3-pip socat dnsutils screen iperf3 iotop bash bash-completion make gawk ca-certificates xz-utils
         echo -e "${Msg_Warning}当前系统为 Ubuntu 执行安装结束 ..."
         echo -e "${Msg_Success}当前系统为 Ubuntu 请注意执行安装是否成功"
     elif [ "${Var_OSRelease}" = "debian" ]; then
         echo -e "${Msg_Info}↓↓↓ 当前系统为 Debian 将安装以下软件 ↓↓↓"
         echo -e "        wget curl git lsof vim mtr jq htop sudo vnstat"
-        echo -e "        iftop zsh neofetch unzip zip python3 python3-pip"
+        echo -e "        iftop neofetch unzip zip python3 python3-pip"
         echo -e "        socat dnsutils screen iperf3"
+        echo -e "        bash bash-completion make gawk ca-certificates xz-utils"
         echo -e "${Msg_Info}↑↑↑ 当前系统为 Debian 将安装以上软件 ↑↑↑"
         echo -e "${Msg_Warning}等待 5 秒，如有疑问请键入 Ctrl + C 终止脚本运行！！！"
         sleep 5
         echo -e "${Msg_Warning}当前系统为 Debian 执行安装中 ..."
         apt update
         apt upgrade -y
-        apt install -y wget curl git lsof vim mtr jq htop sudo vnstat iftop zsh neofetch unzip zip python3 python3-pip socat dnsutils screen iperf3
+        apt install -y wget curl git lsof vim mtr jq htop sudo vnstat iftop neofetch unzip zip python3 python3-pip socat dnsutils screen iperf3 bash bash-completion make gawk ca-certificates xz-utils
         echo -e "${Msg_Warning}当前系统为 Debian 执行安装结束 ..."
         echo -e "${Msg_Success}当前系统为 Debian 请注意执行安装是否成功"
     elif [ "${Var_OSRelease}" = "centos" ]; then
         echo -e "${Msg_Info}↓↓↓ 当前系统为 Centos 将安装以下软件 ↓↓↓"
         echo -e "        wget curl git lsof vim mtr jq htop sudo vnstat"
-        echo -e "        iftop zsh neofetch unzip zip python3 python3-pip"
+        echo -e "        iftop neofetch unzip zip python3 python3-pip"
         echo -e "        socat bind-utils screen"
+        echo -e "        bash bash-completion make gawk ca-certificates xz"
         echo -e "${Msg_Info}↑↑↑ 当前系统为 Centos 将安装以上软件 ↑↑↑"
         echo -e "${Msg_Warning}等待 5 秒，如有疑问请键入 Ctrl + C 终止脚本运行！！！"
         sleep 5
         echo -e "${Msg_Warning}当前系统为 Centos 执行安装中 ..."
         yum -y install epel-release
-        yum install -y wget curl git lsof vim mtr jq htop sudo vnstat iftop zsh neofetch unzip zip python3 python3-pip socat bind-utils screen
+        yum install -y wget curl git lsof vim mtr jq htop sudo vnstat iftop neofetch unzip zip python3 python3-pip socat bind-utils screen bash bash-completion make gawk ca-certificates xz
         echo -e "${Msg_Warning}当前系统为 Centos 执行安装结束 ..."
         echo -e "${Msg_Success}当前系统为 Centos 请注意执行安装是否成功"
     fi
@@ -218,8 +250,14 @@ InstallOhmyzsh() {
         exit 1
     fi
     echo -e "${Msg_Info}ZSH 已经安装，开始检测 ohmyzsh 是否安装 ... "
+    if ! vps_init_resolve_account; then
+        echo -e "${Msg_Error}无法确定目标账户，已停止 Oh My Zsh 安装"
+        return 1
+    fi
+    local home=$VPS_ACCOUNT_HOME
+    local user=$VPS_ACCOUNT_USER
 
-    if [ ! -d "/root/.oh-my-zsh" ]; then
+    if [ ! -d "$home/.oh-my-zsh" ]; then
         SystemInfo_GetOSRelease
         if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
             echo -e "${Msg_Warning}安装 git 中 ..."
@@ -242,19 +280,20 @@ InstallOhmyzsh() {
         if [ ! -f "/usr/bin/git" ]; then
             echo -e "${Msg_Warning}git 未找到, 由于无法识别当前系统无法继续，请手动安装后重新执行 ..."
         else
-            cd $HOME
-            sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh) --unattended" --skip-chsh
-            git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-            git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-            mkdir -p "$HOME/.zsh"
-            git clone https://github.com/sindresorhus/pure.git "$HOME/.zsh/pure"
-            echo "fpath+=$HOME/.zsh/pure" >>$HOME/.zshrc
-            echo "autoload -U promptinit; promptinit" >>$HOME/.zshrc
-            echo "zmodload zsh/nearcolor" >>$HOME/.zshrc
-            echo "zstyle :prompt:pure:path color '#FF0000'" >>$HOME/.zshrc
-            echo "prompt pure" >>$HOME/.zshrc
-            plugins=$(cat $HOME/.zshrc | grep plugins= | grep ^p)
-            sed -i "s/$plugins/plugins=(git z colored-man-pages zsh-autosuggestions zsh-syntax-highlighting extract)/g" $HOME/.zshrc
+            cd "$home" || return 1
+            env HOME="$home" ZSH="$home/.oh-my-zsh" sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh) --unattended" --skip-chsh
+            export ZSH_CUSTOM="$home/.oh-my-zsh/custom"
+            git clone https://github.com/zsh-users/zsh-autosuggestions "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+            git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+            mkdir -p "$home/.zsh"
+            git clone https://github.com/sindresorhus/pure.git "$home/.zsh/pure"
+            echo "fpath+=$home/.zsh/pure" >>"$home/.zshrc"
+            echo "autoload -U promptinit; promptinit" >>"$home/.zshrc"
+            echo "zmodload zsh/nearcolor" >>"$home/.zshrc"
+            echo "zstyle :prompt:pure:path color '#FF0000'" >>"$home/.zshrc"
+            echo "prompt pure" >>"$home/.zshrc"
+            plugins=$(cat "$home/.zshrc" | grep plugins= | grep ^p)
+            sed -i "s/$plugins/plugins=(git z colored-man-pages zsh-autosuggestions zsh-syntax-highlighting extract)/g" "$home/.zshrc"
             echo -e "${Msg_Warning}Ohmyzsh 安装设置完成 ..."
             if [ "$(basename -- "$SHELL")" = "zsh" ]; then
                 echo -e "${Msg_Warning}当前 Shell 为 ZSH ..."
@@ -291,21 +330,21 @@ InstallOhmyzsh() {
                 fi
             fi
 
-            if [ -n "$SHELL" ]; then
-                echo "$SHELL" >~/.shell.pre-oh-my-zsh
-            else
-                grep "^$USERNAME:" /etc/passwd | awk -F: '{print $7}' >~/.shell.pre-oh-my-zsh
-            fi
+            printf '%s\n' "$VPS_ACCOUNT_SHELL" >"$home/.shell.pre-oh-my-zsh"
 
-            # Actually change the default shell to zsh
-            if ! chsh -s "$zsh"; then
+            if ! vps_init_chsh "$zsh" "$user"; then
                 echo -e "${Msg_Error}chsh 命令执行失败，请自行切换默认 Shell ！！！"
             else
-                export SHELL="$zsh"
+                if [ "$user" = "$(id -un)" ]; then
+                    export SHELL="$zsh"
+                fi
                 echo "${GREEN}Shell 已经切换至 '$zsh'"
             fi
             echo -e "${Msg_Success}Ohmyzsh 安装完成，并使用 Pure [https://github.com/sindresorhus/pure] 主题 ..."
-            exec zsh -l
+            if [ "$user" = "$(id -un)" ]; then
+                exec zsh -l
+            fi
+            echo -e "${Msg_Success}已为账户 ${user} 安装 Oh My Zsh。当前进程不是该账户，未切换当前进程的 shell。"
         fi
     else
         echo -e "${Msg_Success}Ohmyzsh 已经安装！！！"
@@ -418,8 +457,12 @@ echo_help() {
     # echo -e "${Font_Yellow}--mode TestMode${Font_Suffix}\t${Font_SkyBlue}Test Mode (fast/full, aka FastMode/FullMode)${Font_Suffix}"
     # echo -e ""
     echo -e "${Font_SkyBlue}>> Single Command${Font_Suffix}"
-    echo -e "${Font_Yellow}-i or --install [software]${Font_Suffix}\t${Font_SkyBlue}Base software install${Font_Suffix}"
-    echo -e "${Font_Yellow}-h or --help${Font_Suffix}\t\t\t${Font_SkyBlue}Print Help memu${Font_Suffix}"
+    echo -e "${Font_Yellow}-i or --install${Font_Suffix}\t\t${Font_SkyBlue}基础软件，以及 Bash 5 交互配置。不安装 zsh${Font_Suffix}"
+    echo -e "${Font_Yellow}-i ohmyzsh${Font_Suffix}\t\t${Font_SkyBlue}另选安装 Oh My Zsh、Pure，并尝试把目标账户的登录 shell 改为 zsh${Font_Suffix}"
+    echo -e "${Font_Yellow}-i collectd${Font_Suffix}\t\t${Font_SkyBlue}另选安装 collectd${Font_Suffix}"
+    echo -e "${Font_Yellow}-i sysctl${Font_Suffix}\t\t${Font_SkyBlue}另选写入 sysctl${Font_Suffix}"
+    echo -e "${Font_Yellow}-i bash-rollback${Font_Suffix}\t${Font_SkyBlue}把登录 shell 改回第一次 Bash 安装时记录的路径${Font_Suffix}"
+    echo -e "${Font_Yellow}-h or --help${Font_Suffix}\t\t${Font_SkyBlue}Print Help memu${Font_Suffix}"
     # echo -e "${Font_Yellow}--spfast${Font_Suffix}\t\t${Font_SkyBlue}Speedtest Test (Fast Test Mode)${Font_Suffix}"
     # echo -e "${Font_Yellow}--spfull${Font_Suffix}\t\t${Font_SkyBlue}Speedtest Test (Full Test Mode)${Font_Suffix}"
     # echo -e "${Font_Yellow}--trfast${Font_Suffix}\t\t${Font_SkyBlue}Traceroute Test (Fast Test Mode)${Font_Suffix}"
@@ -431,34 +474,40 @@ echo_help() {
     # echo -e "${Font_Yellow}--spoof${Font_Suffix}\t\t${Font_SkyBlue}Caida Spoofer Test ${Font_Yellow}(Use it at your own risk)${Font_Suffix}${Font_Suffix}"
 }
 
-case $1 in
---install | -i)
-    if [ $# -eq 1 ]; then
-        enviorment_test
-        BaseInstall
-    elif [ $# -eq 2 ]; then
-        case $2 in
-        ohmyzsh)
-            InstallOhmyzsh
-            ;;
-        collectd)
-            InstallCollectd
-            ;;
-        sysctl)
-            Installsysctl
-            ;;
-        *)
-            [[ "$1" != 'error' ]] && echo -ne "\n${Msg_Error}Not Support install $2\n"
-            ;;
-        esac
-    fi
-    ;;
---help | -h)
-    echo_help
-    ;;
-*)
-    [[ "$1" != 'error' ]] && echo -ne "\n${Msg_Error}Invalid Parameters: \"$1\"\n"
-    echo_help
-    exit 1
-    ;;
-esac
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+    case $1 in
+    --install | -i)
+        if [ $# -eq 1 ]; then
+            enviorment_test
+            BaseInstall
+            InstallBashInteractive || exit $?
+        elif [ $# -eq 2 ]; then
+            case $2 in
+            ohmyzsh)
+                InstallOhmyzsh
+                ;;
+            collectd)
+                InstallCollectd
+                ;;
+            sysctl)
+                Installsysctl
+                ;;
+            bash-rollback)
+                RollbackBashShell || exit $?
+                ;;
+            *)
+                [[ "$1" != 'error' ]] && echo -ne "\n${Msg_Error}Not Support install $2\n"
+                ;;
+            esac
+        fi
+        ;;
+    --help | -h)
+        echo_help
+        ;;
+    *)
+        [[ "$1" != 'error' ]] && echo -ne "\n${Msg_Error}Invalid Parameters: \"$1\"\n"
+        echo_help
+        exit 1
+        ;;
+    esac
+fi
